@@ -56,3 +56,16 @@ _build
 .#*
 exp/
 *-kompiled/
+*.log
+*.aux
+*.blg
+*.synctex.gz
+*.bbl
+*.nfs
+*.out
+*.pdf
+#*#
+*.toc
+*.lot
+*.lof
+*.idx

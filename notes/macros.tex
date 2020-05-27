@@ -1,0 +1,241 @@
+\usepackage{sidecap}
+\usepackage{microtype}
+\usepackage{placeins}
+\usepackage{comment}
+\usepackage{url,hyperref}
+\usepackage[strings]{underscore}
+
+% language/encoding stuff
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[titletoc,title]{appendix}
+%\usepackage[font=small,labelfont=bf]{caption}
+
+% Maths stuff
+\usepackage{latexsym,amssymb,ae,amscd,stmaryrd}
+\usepackage{graphicx}% http://ctan.org/pkg/graphicx, for scalebox
+\usepackage{enumerate}% http://ctan.org/pkg/enumerate
+\usepackage{listings} % for code
+\lstset{language=CAML}
+%\lstset{basicstyle=\ttfamily\small}
+\usepackage{courier}
+\usepackage{mathtools}
+\usepackage{array} % for \newcolumntype macro
+\usepackage{ebproof} % for proof trees
+%\usepackage{amsmath}
+\usepackage{xtab}
+
+\allowdisplaybreaks
+\setlength{\belowdisplayskip}{1pt}
+
+\usepackage{color}
+\usepackage{xcolor}
+
+\usepackage{wrapfig}
+
+\usepackage{pdfpages}
+%% Nikos' macros
+
+\usepackage{paralist}
+%\newcommand\nt[1]{{\color{blue}{\bf NT:} \em #1}}
+\newcommand\nt[1]{{\color{blue}#1}}
+\newcommand\sem[1]{\llbracket #1\rrbracket}
+\newcommand\ofSig[1]{#1^\circ}
+\newcommand\dom{\mathrm{dom}}
+\newcommand\boldemph[1]{\textbf{\emph{#1}}}
+\newcommand\doSig[1][\sigma]{\{#1\}}
+\newcommand\cutout[1]{}
+
+%These are for pretty printing 
+\renewcommand{\ttdefault}{cmvtt}
+%\usepackage[scaled=0.87]{helvet}
+%\renewcommand{\sfdefault}{phv}
+
+
+%% Yu-Yang's macros
+\newcommand\TODO[1]{{\color{red}{\bf TODO:} \em #1}}
+
+% Commands for common things
+\newcommand{\ret}{ret} %  ret
+\newcommand{\defval}{\mathtt{dval}} %  ret
+\newcommand{\nil}{\mathtt{nil}} %  nil
+\newcommand{\isnil}{\mathtt{inil}} %  nil
+\newcommand{\fail}{BLA} %  fail
+\newcommand{\assert}[1]{\mathtt{assert}(#1)} %  fail
+\newcommand{\bigchi}{\mbox{\Large$\chi$}} % big chi
+\newcommand{\refs}{\mathtt{Refs}}
+\newcommand{\meths}{\mathtt{Meths}}
+\newcommand{\vars}{\mathtt{Vars}}
+\newcommand{\ints}{\mathtt{Int}}
+\newcommand{\vals}{\mathtt{Vals}}
+\newcommand{\cvals}{\mathtt{CVals}}
+\newcommand{\canons}{\mathtt{CForms}}
+\newcommand{\ssarefs}{\mathtt{SSAVars}}
+\newcommand{\termsM}{\mathtt{Terms}}
+\newcommand{\pts}{\mathtt{Pts}}
+\newcommand\atype[1]{\mathtt{#1}}
+\newcommand\Item[1][]{%
+	\ifx\relax#1\relax  \item \else \item[#1] \fi
+	\abovedisplayskip=0pt\abovedisplayshortskip=0pt~\vspace*{-\baselineskip}}
+\newcommand{\preserves}{\simeq}
+\newcolumntype{L}{>{$}l<{$}} % math-mode version of "l" column type
+\newcolumntype{R}{>{$}r<{$}} % math-mode version of "r" column type
+\newcolumntype{C}{>{$}c<{$}} % math-mode version of "c" column type
+\newcommand{\llbraces}{\{\!\!\{}
+\newcommand{\rrbraces}{\}\!\!\}}
+\newcommand\fleq[1]{\begin{flalign*} &#1& \end{flalign*}}
+\newcommand\canonsubs[1]{\llbraces #1 \rrbraces}
+\newcommand\pair[1]{\langle #1 \rangle}
+
+\newcommand{\CC}{C\nolinebreak\hspace{-.05em}\raisebox{.4ex}{\tiny\bf +}\nolinebreak\hspace{-.10em}\raisebox{.4ex}{\tiny\bf +}}
+\newcommand{\CS}{C\nolinebreak\hspace{-.04em}\raisebox{.4ex}{\small\bf \#}}
+\newcommand\evalbox[1]{\llparenthesis{#1}\rrparenthesis}
+\newcommand{\racket}{\textsc{Racket}}
+\newcommand{\horef}{\textsc{HORef}}
+
+\newcommand{\rosette}{\textsc{Rosette}}
+\newcommand{\bmctwo}{\textsc{BMC-2}}
+\newcommand{\mochi}{\textsc{MoCHi}}
+
+\lstdefinelanguage{Lambda}{%
+  morekeywords={%
+    if,then,else,fix,let,letrec,in,fail,nil,match,with,assert,new % keywords go here
+  },%
+  morekeywords={[2]int},   % types go here
+  otherkeywords={:,+,-,=}, % operators go here
+  literate={% replace strings with symbols
+    {rarr}{{$\to$}}{1}
+    {lambda}{{$\lambda$}}{1}
+    {leq}{{$\leq$}}{1}
+    {geq}{{$\geq$}}{1}
+  },
+  basicstyle={\small},
+  keywordstyle={\bfseries},
+  keywordstyle={[2]\itshape}, % style for types
+  keepspaces,
+  tabsize=2,
+  columns=flexible,
+  mathescape % optional
+}[keywords,comments,strings]%
+
+\newcommand{\appsigma}{\{\sigma\}}
+\newcommand{\appsigmas}[1]{\{\sigma_#1\}}
+
+%==============
+% Commands for translation algorithm
+\newcommand\letin[1]{\text{let}~#1~\text{in}}
+% base cases:
+\newcommand{\tnil}{\begin{aligned}[t]
+&\llbracket M,R,C,D,\phi,\alpha,pc,\nil\rrbracket =
+(\ret,(\ret = \defval) \land \phi,R,C,D,\alpha \land (pc\implies \isnil),\bot)
+\end{aligned}}
+\newcommand{\tfail}{NO LONGER IN USE}
+\newcommand{\tval}{\begin{aligned}[t]
+&\llbracket v,R,C,D,\phi,\alpha,pc,k\rrbracket = (\ret,(\ret=v)\land \phi,R,C,D,\alpha,\top)
+\end{aligned}}
+\newcommand{\tderef}{\begin{aligned}[t]
+&\llbracket {!}r,R,C,D,\phi,\alpha,pc,k\rrbracket = (\ret,(\ret=D(r))\land \phi,R,C,D,\alpha,\top)
+\end{aligned}}
+\newcommand{\tlambda}{\begin{aligned}[t]
+&\llbracket \lambda x.M,R,C,D,\phi,\alpha,pc,k\rrbracket =
+\begin{aligned}[t]
+& (\ret,(\ret=m)\land \phi,R',C,D,\alpha,\top)\\
+&\text{where $R'=R[m \mapsto \lambda x.M]$ and $m$ fresh}
+\end{aligned}
+\end{aligned}}
+\newcommand{\tpi}{\begin{aligned}[t]
+		& \llbracket\pi_i\,v,R,C,D,\phi,\alpha,pc,k\rrbracket = (\ret,(\ret=\pi_i\,v)\land \phi,R,C,D,\alpha,\top)
+	\end{aligned}}
+\newcommand{\tassign}{\begin{aligned}[t]
+& \llbracket r:=v,R,C,D,\phi,\alpha,pc,k\rrbracket =
+\begin{aligned}[t]
+	&\letin{C' = C[r]}\
+     \letin{D' = D[r\mapsto C'(r)]} \\
+	 &(\ret,((\ret={()}) \land (D'(r)=v)) \land \phi,R,C',D',\alpha,\top)
+\end{aligned}
+\end{aligned}}
+\newcommand{\tplus}{\begin{aligned}[t]
+		& \llbracket v_1 \oplus v_2,R,C,D,\phi,\alpha,pc,k\rrbracket = (\ret,(\ret=v_1\oplus v_2) \land \phi,R,C,D,\alpha,\top)
+	\end{aligned}}
+\newcommand{\tpair}{\begin{aligned}[t]
+    	& \llbracket \pair{v_1,v_2},R,C,D,\phi,\alpha,pc,k\rrbracket = (\ret,(\ret=\pair{v_1,v_2}) \land \phi,R,C,D,\alpha,\top)
+	\end{aligned}}
+\newcommand{\asserts}{\begin{aligned}[t]
+    	& \llbracket \assert{v},R,C,D,\phi,\alpha,pc,k\rrbracket =
+         (\ret,(\ret=()) \land \phi,R,C,D,(pc \implies (v \neq 0)) \land \alpha,\top)
+	\end{aligned}}
+% inductive cases:
+\newcommand{\tletin}{\begin{aligned}[t]
+	& \llbracket \texttt{let $x=M$ in $M'$},R,C,D,\phi,\alpha,pc,k\rrbracket =\\
+		&\quad \begin{aligned}[t]
+			& \letin{(\ret_1,\phi_1,R_1,C_1,D_1,\alpha_1,pc_1) = \llbracket M,R,C,D,\phi,\alpha,pc,k\rrbracket}\\
+			& \letin{(\ret_2,\phi_2,R_2,C_2,D_2,\alpha_2,pc_2) = \llbracket M'\{\ret_1/x\},R_1,C_1,D_1,\phi_1,\alpha_1,pc \land pc_1,k\rrbracket}\\
+			&(\ret_2,\phi_2,R_2,C_2,D_2,\alpha_2,pc_1 \land pc_2)
+		\end{aligned}
+	\end{aligned}}
+\newcommand{\tletrec}{\begin{aligned}[t]
+	& \llbracket \texttt{letrec $f=\lambda x.M$ in $M'$},R,C,D,\phi,\alpha,pc,k\rrbracket =\\
+		&\quad \begin{aligned}[t]
+			& \letin{\text{$m$ be fresh}}\\
+            & \letin{R' = R[m \mapsto \lambda x.M\{m/f\}]} \
+			\llbracket M'\{m/f\},R',C,D,\phi,\alpha,pc,k\rrbracket
+		\end{aligned}
+	\end{aligned}}
+\newcommand{\tapplym}{\begin{aligned}[t]
+		& \llbracket m\,v,R,C,D,\phi,\alpha,pc,k\rrbracket =\\
+		&\quad \begin{aligned}[t]
+			& \letin{R(m)\text{ be }\lambda x.N} \
+			\llbracket N\{v/x\},R,C,D,\phi,\alpha,pc,k-1\rrbracket
+		\end{aligned}
+	\end{aligned}}
+\newcommand{\tifthenelse}{\begin{aligned}[t]
+		& \llbracket \texttt{if $v$ then $M_1$ else $M_0$},R,C,D,\phi,\alpha,pc,k\rrbracket =\\
+		&\quad \begin{aligned}[t]
+			&\letin{(\ret_0,\phi_0,R_0,C_0,D_0,\alpha_0,pc_0) = 
+			 \llbracket 	M_0,R,C,D,\phi,\alpha,pc \land (v = 0),k\rrbracket}\\
+			&\letin{(\ret_1,\phi_1,R_1,C_1,D_1,\alpha_1,pc_1) = 
+			 \llbracket M_1,R_0,C_0,D,\phi_0,\alpha_0,pc \land (v \neq 0),k\rrbracket}\\
+			&\letin{C' = C_1[r_1]\cdots[r_n]\ (\varPi=\{r_1,\dots,r_n\})}\\
+			&\letin{\psi_0 = (v = 0) \implies ((\ret=\ret_0) {}\land
+             \bigwedge\nolimits_{r \in \varPi} (C'(r)=D_0(r)))}\\
+            & \letin{\psi_1 = (v \neq 0) \implies ((\ret=\ret_1) {}\land
+             \bigwedge\nolimits_{r \in \varPi} (C'(r)=D_1(r)))}\\
+			& (\ret,\psi_0 \land \psi_1 \land \phi_1,R,C',C',\alpha_1,
+            ((pc_0 \land (v = 0)) \lor (pc_1 \land (v \neq 0))))
+		\end{aligned}
+	\end{aligned}}
+\newcommand{\tapplyx}{\begin{aligned}[t]
+		& \llbracket x^\theta\,v,R,C,D,\phi,\alpha,pc,k\rrbracket =\\
+		&\quad \begin{aligned}[t]
+        &\text{if }R \upharpoonright \theta =\emptyset\text{ then } (\ret,(\ret=\defval)\land\phi,R,C,D,\alpha,\bot) \text{ else }\\
+        &\letin{R \upharpoonright \theta\text{ be }\{m_1,...,m_n\} \text{ and } (R,C,\phi,\alpha) \text{ be } (R_0,C_0,\phi_0,\alpha_0)}\\
+    	&\text{for each }i \in \{1,...,n\}:\\
+			&\quad
+			\begin{aligned}[t]
+				& \letin{R(m_i)\text{ be } \lambda y_i.N}\
+				\letin{(\ret_i,\phi_i,R_i,C_i,D_i,\alpha_i,pc_i) = \\
+				& \qquad \llbracket N_i\{v/y_i\},R_{i-1},
+				C_{i-1},D,\phi_{i-1},\alpha_{i-1},pc \land (x = m_i),k-1\rrbracket}\\
+			\end{aligned}\\
+			& \letin{C_n' = C_n[r_1]\cdots[r_j]\ (\varPi=\{r_1,\dots,r_j\})}\\
+			& \letin{\psi = \bigwedge_{i=1}^{n}
+				\left(
+					(x=m_i) \implies 
+					((\ret=\ret_i) \land 
+					\bigwedge\nolimits_{r \in \varPi}{(C_n'(r)=D_i(r))})
+\right)}\\
+            & \letin{pc_n' = \bigvee_{i=1}^{n}
+				\left(\vcenter{\hbox{$\displaystyle
+                    pc_i \land (x = m_i)
+				$}}\right)} \
+			(\ret,\psi \land \phi_n,R_n,C_n',C_n',\alpha_n,pc_n')
+			\end{aligned}
+	\end{aligned}}
+%==============
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:

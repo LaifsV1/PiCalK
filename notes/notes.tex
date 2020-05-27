@@ -1,0 +1,238 @@
+% Version 2.20 of 2017/10/04
+%
+\documentclass[envcountsame,runningheads,orivec]{llncs}
+%
+\usepackage{graphicx}
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following line
+% to display URLs in blue roman font according to Springer's eBook style:
+% \renewcommand\UrlFont{\color{blue}\rmfamily}
+\raggedbottom
+\input{macros}
+\begin{document}
+%
+\title{Pi-Calculus LTS Operational Semantics\thanks{Research funded by XXX (XXXX).}}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{Yu-Yang Lin}
+%
+%\authorrunning{F. Author et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{<INSTITUTE>}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+
+%\keywords{First keyword  \and Second keyword \and Another keyword.}
+\end{abstract}
+%
+%
+%
+%\input{S-intro}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Syntax}
+
+\begin{align*}
+\text{Labels} \quad~\alpha &::= a!a \mid a!(a) \mid a?a \mid a?(a) \mid \tau \\
+\text{Prefixes} \quad~ \pi &::= \tau \mid a \pair{a} \mid a (x)\\
+\text{Process Terms} \quad~ P &::= 0 \mid \pi . P \mid \nu x P \mid P + P \mid P\parallel P \mid X(\vec a)\\
+\text{Process Program} \quad~ M &::= P \mid X(\vec x) = P ; M \mid \texttt{observer }a ; M
+\end{align*}
+where:
+\begin{itemize}
+\item names are ranged over $a,b,c$ and variants
+\item variables are ranged over $x,y,z$ and variants
+\item process terms are ranged over $P,Q$ and variants
+\item prefixes are ranged over $\pi$ and variants
+\item method names are ranged over $X,Y,Z$ and variants
+\item programs are ranged over $M$ and variants
+\end{itemize}
+\[
+\text{Binding Priority} \quad~ \pi.P > \nu x P > P + P > P\parallel P
+\]
+
+\section{Semantics}
+
+\subsection{Configurations:}
+\[
+\texttt{global}(S,\delta,\Delta) \vdash \pair{\Gamma,L,R}
+\]
+where the components are as follows
+\begin{itemize}
+\item $\Gamma$: a set of global names
+\item $L$: a set of local names and $\Gamma \cap L = \varnothing$
+\item $R$: a multi-set of processes $P$ running in parallel
+\item $S$: a globally accessible set of valid LTS states $(\Gamma,L,R)$ seen so far
+\item $\delta$: a globally accessible set of valid LTS transitions accumulated so far
+\item $\Delta$: a globally accessible immutable map of process declarations
+\end{itemize}
+
+\subsection{Notation:}
+\begin{itemize}
+\item $\mathcal{P}$: the set of all processes $P$
+\item $\mathcal{L}$: the set of all action labels $\alpha$
+\item $C_1 \to^* C_2 \xrightarrow{\alpha} \pair{\Gamma,L,R}\rhd S,\delta$: update global LTS
+\[S \uplus (\Gamma,L,R) \quad \text{ and } \quad \delta \uplus (C_1,\alpha,\pair{\Gamma,L,R})\]
+where $C_1$ is the last LTS-visible configuration in the current path so far
+\item $\tilde{a}$: name $a$ that is globally and historically fresh at the point it is introduced
+\item $\to^+$: transitive closure of $\to$
+\item $\to^*$: reflexive transitive closure of $\to$
+\item $C_1 \Downarrow C_2$ means $C_1$ evaluates to (converges on) $C_2$, i.e. $C_1 \to^* C_2 \not\to$
+\end{itemize}
+
+\subsection{Initialisation:}
+
+Initialisation configuration: $\pair{M \mid \Gamma, \Delta}$
+
+\begin{align*}
+M &\xrightarrow{init} \pair{M \mid \varnothing,\varnothing}\\
+\pair{X(\vec x) = P;M \mid \Gamma,\Delta} &\xrightarrow{init} 
+\pair{M \mid \Gamma,\Delta[X \mapsto \pair{\vec x, P}]}
+\\
+\pair{\texttt{observer }a ; M \mid \Gamma,\Delta} &\xrightarrow{init} 
+\pair{M \mid \Gamma \cup \{a\},\Delta}
+\\
+\pair{P \mid \Gamma,\Delta} 
+&\xrightarrow{init} 
+\texttt{global}(\{\pair{\Gamma,\varnothing,\{P\}}\},\varnothing,\Delta) \vdash \pair{\Gamma,\varnothing,\{P\}}
+\end{align*}
+
+\subsection{Semantics:}
+We produce an LTS for a given program as a side-effect of building its computation tree. The computation tree is constructed as the reflexive transitive closure of the transition rules below by applying the rules according to priority and determinism. 
+
+\subsubsection{Deterministic Structural Transitions:}
+Determinism may be enforced with a queue of processes. This is strongly normalising as processes are defined finitely.
+\begin{flalign*}
+&\text{Flattening parallels (highest priority):}\\
+&\pair{\Gamma,L,R \cup \{P \parallel Q\}}
+\to_\beta
+\pair{\Gamma,L,R \cup \{P, Q\}}
+&\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Name allocation (high priority):}\\
+&\pair{\Gamma,L,R \cup \{\nu x P\} } \to_\beta 
+\pair{\Gamma,L\uplus \tilde{a},R \cup \{ P\{\tilde{a}/x\} \} }
+&
+\end{flalign*}
+\subsubsection{Non-Deterministic Process Semantics:} Process rules have lower priority than the deterministic structural transitions. This is equivalent to fully evaluating structural $\beta$-transitions after every process transition.
+\begin{flalign*}
+&\text{Unobservable action:}\\
+&\pair{\Gamma,L,R \cup \{\tau.P\}
+} \xrightarrow{\tau}
+%
+\pair{\Gamma,L,R \cup \{P\}
+}\rhd S,\delta\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Output to environment (fresh and known):}\\
+&\pair{\Gamma \uplus a,L \uplus b,R \cup \{a \pair{b}. P\}} 
+\xrightarrow{a!(b)}
+%
+\pair{\Gamma \uplus a \uplus b,L,R \cup\{P\}
+}\rhd S,\delta&\\
+%%%%%
+&\pair{\Gamma \uplus a \cup b,L,R \cup \{a \pair{b}. P\} } 
+\xrightarrow{a!b}
+%
+\pair{\Gamma \uplus a \cup b,L,R \cup\{P\}
+}\rhd S,\delta&\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Input from environment (fresh and known):}\\
+&\pair{\Gamma \uplus a,L,R \cup \{a (x). P\} } 
+\xrightarrow{a?(\tilde{b})}
+%
+\pair{\Gamma \uplus a \uplus \tilde{b},L,R \cup\{P\{\tilde{b}/x\}\} 
+}\rhd S,\delta \quad (\tilde{b} \not \in L)&\\
+%%%%%
+&\pair{\Gamma \uplus a \cup b,L,R \cup \{a (b). P\}} 
+\xrightarrow{a?b}
+%
+\pair{\Gamma \uplus a \cup b,L,R \cup\{P\{b/x\}\}
+}\rhd S,\delta&\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Internal communication:}\\
+&\pair{\Gamma,L,R \cup \{a\pair{b}.P,a(x).Q
+\}} \xrightarrow{\tau}
+%
+\pair{\Gamma,L,R \cup \{P, Q\{b/x\} \}
+}\rhd S,\delta&\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Recursion:}~(N(X) = \pair{\vec{x},P})\\
+&\pair{\Gamma,L,R \cup \{X \vec{a}\}
+} \xrightarrow{\tau}
+%
+\pair{\Gamma,L,R \cup \{P\{\vec{a}/\vec{x}\}\} 
+}\rhd S,\delta&\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Left of Sum:}\\
+&\pair{\Gamma,L,R \cup \{P + Q\}
+} \to 
+%
+\pair{\Gamma,L,R \cup \{P\}
+}&\\\\
+%%%%%
+%=====================
+%%%%%
+&\text{Right of Sum:}\\
+&\pair{\Gamma,L,R \cup \{P + Q\}
+} \to 
+%
+\pair{\Gamma,L,R \cup \{Q\}
+}&\\\\
+\end{flalign*}
+this  needs $S$ to contain the starting configuration.
+
+\TODO{
+\begin{itemize}
+\item exhaust $\beta$ (structural) transitions before making LTS transitions
+\item define some kind of normal form
+\item think about defining an alpha-equivalence
+\item Bruijn or Barendregt convention?
+\item nominal terms?
+\item final year project approach of defining an order for terms with no bound names, and renaming bound names deterministically
+\end{itemize}
+
+
+
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%
+% ---- Bibliography ----
+%
+% BibTeX users should specify bibliography style 'splncs04'.
+% References will then be sorted and formatted in the correct style.
+%
+%\bibliographystyle{abbrv}
+%\bibliography{main}
+
+%\input{S-biblio}
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "main"
+%%% End:
