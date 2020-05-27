@@ -1,0 +1,1 @@
+new a. new b. ( (a<b>.end) | (a[x].end) )

@@ -1,0 +1,4 @@
+extern g;
+f(a,b,c) = ((a<c>.b[x].x<a>.end) | ((a[y].b<c>.c[y].end) + (c[z].end)));
+
+new d . new e . f (d,e,g)
