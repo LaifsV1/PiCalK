@@ -9,8 +9,6 @@ module PICAL-SYNTAX
                  | KVar "!" "(" KVar ")" 
                  | KVar "?" "(" KVar ")" 
                  | Tau
-                 | "beta"
-                 | "epsilon"
   
   syntax Process ::= Empty
                    | KVar "(" KVarVec ")"
@@ -41,9 +39,12 @@ module PICAL
   imports DOMAINS
   imports SET
 
-  syntax Program ::= "__BETA__" 
-                   | "__PROCESS__" 
-                   | "__STOP__" 
+  syntax KResult ::= Stop
+  syntax Program ::= Mode
+                   | Stop
+  syntax Mode    ::= "__BETA__" 
+                   | "__PROCESS__"
+  syntax Stop    ::= "__STOP__" 
   syntax MBody   ::= KVarVec "->" Process [binder]
 
   configuration 
@@ -56,9 +57,14 @@ module PICAL
           </processes>
           <methods> .Map </methods>
           <trace> .K </trace>
-          <step> 0 </step>
+          <step> 5 </step>
       </T>
 
+
+  // Termination
+  rule <k> _ => __STOP__ </k>
+       <step> 0 => -1 </step>
+       [priority(1)]
 
   ////////////////////////////////////////////////////
   // Initialisation                                 //
@@ -80,10 +86,8 @@ module PICAL
   // we assume global and local are disjoint //
   // because we add fresh names to local     //
   /////////////////////////////////////////////
-  // TODO: make structural transitions deterministic
   // TODO: missing labels
   // TODO: missing global update
-  // TODO: __HALT__ might be useful to stop on explored states
   
   ///////////////////////////////////
   // STRUCTURAL (BETA) TRANSITIONS //
@@ -97,7 +101,7 @@ module PICAL
          (.Bag => <process> Q </process>)
          ...
        </processes>
-       [priority(20)]
+       [transition]
 
   // Structural Transition: Name allocation
   rule <k> __BETA__ </k>
@@ -107,26 +111,32 @@ module PICAL
          ...
        </processes>
        <local> ... (.Set => SetItem( !A )) ... </local>
-       [priority(22)]
-
+       [transition]
+       
   // Structural Transition: Return to process transitions  
   syntax Bool ::= NoMoreBeta(ProcessesCell) [function]
-  rule NoMoreBeta( <processes> <process> new X:KVar . P:Process </process> ... </processes> ) => false
-  rule NoMoreBeta( <processes> <process> P | Q     </process> ... </processes> ) => false
-  rule NoMoreBeta( <processes> (<process> tau </process> => .Bag) ... </processes> )
-  rule NoMoreBeta( <processes> (<process> A:KVar (AS:KVarVec) </process> => .Bag) ... </processes> )
-  rule NoMoreBeta( <processes> (<process> tau . P </process> => .Bag) ... </processes> )
-  rule NoMoreBeta( <processes> (<process> A:KVar < B > . P </process> => .Bag) ... </processes> )
-  rule NoMoreBeta( <processes> (<process> A:KVar [ X ] . P </process> => .Bag) ... </processes> )
-  rule NoMoreBeta( <processes> (<process> P + Q </process> => .Bag) ... </processes> )
-  rule NoMoreBeta( <processes> .Bag </processes> ) => true
+  rule NoMoreBeta( 
+         <processes> 
+           ... 
+           (<process> new X:KVar . P:Process </process>) 
+           ... 
+          </processes> ) => false
+         [priority(50)]
+  rule NoMoreBeta( 
+         <processes> 
+           ... 
+           (<process> P | Q </process>) 
+           ... 
+         </processes> ) => false
+         [priority(60)]
+  rule NoMoreBeta( _ ) => true 
+       [priority(150)]
   
   rule <k> __BETA__ => __PROCESS__ </k>
-       <step> I:Int => I +Int 1 </step>
        <processes> PROCESSES </processes>
-       <trace> TRACE => TRACE ~> beta:Label </trace>
+       <step> I:Int => I -Int 1 </step>
        requires NoMoreBeta(<processes> PROCESSES </processes>)
-       [priority(24)]
+       [transition]
 
   /////////////////////////
   // PROCESS TRANSITIONS //
@@ -139,7 +149,9 @@ module PICAL
          <process> tau . P => P </process>
          ...
        </processes>
-       <trace> TRACE => TRACE ~> tau:Label </trace>
+       <trace> _ => tau:Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
        
   // Labelled Transition: Fresh output
@@ -160,7 +172,9 @@ module PICAL
          (SetItem( B:KVar ) => .Set)
          ... 
        </local>
-       <trace> TR => TR ~> (A ! (B)):Label </trace>
+       <trace> _ => (A ! (B)):Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
        
   // Labelled Transition: Known output
@@ -176,7 +190,9 @@ module PICAL
          SetItem( B:KVar ) 
          ... 
        </global>
-       <trace> TR => TR ~> (A ! B):Label </trace>
+       <trace> _ => (A ! B):Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
        
   // Labelled Transition: Fresh input
@@ -191,7 +207,9 @@ module PICAL
          (SetItem( A ) => SetItem( A ) SetItem( !B ))
          ...
        </global>
-       <trace> TR => TR ~> (A ? (!B)):Label </trace>
+       <trace> _ => (A ? (!B)):Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
        
   // Labelled Transition: Known input
@@ -202,7 +220,9 @@ module PICAL
          ... 
        </processes>
        <global> ... SetItem( A ) SetItem( B ) ... </global>
-       <trace> TR => TR ~> (A ? B):Label </trace>
+       <trace> _ => (A ? B):Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
        
   // Labelled Transition: Internal communication
@@ -213,7 +233,9 @@ module PICAL
          (<process> A:KVar [ X:KVar ] . Q:Process => Q[B/X] </process>)
          ... 
        </processes>
-       <trace> TR => TR ~> (tau):Label </trace>
+       <trace> _ => (tau):Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
 
   // Labelled Transition: Recursion
@@ -226,7 +248,9 @@ module PICAL
          ... 
        </processes>
        <methods> ... (X |-> XS -> P) ... </methods>
-       <trace> TR => TR ~> (tau):Label </trace>
+       <trace> _ => (tau):Label </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
        
   // might need to make these deterministic
@@ -258,7 +282,9 @@ module PICAL
          <process> P + Q => P </process> 
          ... 
        </processes>
-       <trace> TR => TR ~> (epsilon):Label </trace>
+       <trace> _ => . </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
 
   // Internal Transition: Right sum
@@ -268,7 +294,9 @@ module PICAL
          <process> P + Q => Q </process> 
          ... 
        </processes>
-       <trace> TR => TR ~> (epsilon):Label </trace>
+       <trace> _ => . </trace>
+       <step> I </step>
+       requires I =/=Int 0
        [transition]
 endmodule
 
