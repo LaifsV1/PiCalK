@@ -21,7 +21,7 @@ module PICAL-SYNTAX
                    | "(" Process ")"              [bracket]
   syntax Receive ::= "[" KVar "]" "." Process      [binder]
   
-  syntax Program ::= Process 
+  syntax Program ::= Process
                    | KVar Method
                    | "extern" KVar ";" Program     [binder]
   syntax Method ::= "(" KVarVec ")" "=" Definition [binder]

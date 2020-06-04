@@ -15,11 +15,12 @@
     SyntaxError ((Printf.sprintf "error lexing: %s" msg),(pos1,pos2))
 }
 
-let str  = '"' ['A'-'Z''a'-'z''0'-'9''_''\'''>''<''['']''.''|']+ '"'
+let str  = '"' [' ''!''#'-'~']+ '"'
 let cell = "`<" ['A'-'Z''a'-'z']+ ">`"
 let tick = '`' [' '-'_''a'-'~']+ '`'
 let hash = '#' ['A'-'Z''a'-'z''0'-'9''_''\'']+
 let dot  = '.' ['A'-'Z''a'-'z''0'-'9''_''\'''>''<''['']''.''|']+
+let key  = ['A'-'Z''a'-'z''0'-'9''_''\'''>''<''['']''.''|']+
 let white = [' ' '\t']+
 let newline = '\r' | '\n' | "\r\n"
 
@@ -34,6 +35,7 @@ rule read = parse
   | tick as x       { TICK x }
   | hash as x       { HASH x }
   | dot  as x       { DOT x }
+  | key  as x       { KEY x }
   | eof             { EOF }
   | _               { raise (lex_failure ("unknown symbol '"^(lexeme lexbuf)^"'") (lexeme_start_p lexbuf) (lexeme_end_p lexbuf)) }
 {
